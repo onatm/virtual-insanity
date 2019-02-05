@@ -1,0 +1,11 @@
+[package]
+name = "virtual-insanity"
+version = "1.0.0"
+authors = ["onatm <onatmercan@gmail.com>"]
+edition = "2018"
+
+[lib]
+name = "virtual_insanity"
+src = "src/lib.rs"
+
+[dependencies]
