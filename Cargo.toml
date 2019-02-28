@@ -6,6 +6,7 @@ edition = "2018"
 
 [lib]
 name = "virtual_insanity"
-src = "src/lib.rs"
+#src = "src/lib.rs"
 
 [dependencies]
+nom = "^4.1"
