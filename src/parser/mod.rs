@@ -3,7 +3,7 @@ use nom::rest;
 pub struct Parser;
 
 #[derive(Debug, PartialEq)]
-enum Arithmetic {
+pub enum Arithmetic {
     Add,
     Sub,
     Neg,
@@ -16,7 +16,7 @@ enum Arithmetic {
 }
 
 #[derive(Debug, PartialEq)]
-enum Segment {
+pub enum Segment {
     Constant,
     Local,
     Argument,
@@ -27,16 +27,10 @@ enum Segment {
 }
 
 #[derive(Debug, PartialEq)]
-enum Operation {
+pub enum Operation {
     Arithmetic(Arithmetic),
     Push { segment: Segment, val: i32 },
     Pop { segment: Segment, val: i32 },
-    // Label,
-    // Goto,
-    // If,
-    // Function,
-    // Return,
-    // Call,
 }
 
 named!(parse_operation<&str, Operation>,
@@ -119,6 +113,24 @@ named!(parse_segment<&str, Segment>,
         )
     )
 );
+
+impl Parser {
+    pub fn parse(input: &str) -> Vec<Operation> {
+        let mut operations: Vec<Operation> = Vec::new();
+
+        for line in input.lines() {
+            let line = line.trim();
+
+            if line.is_empty() || line.starts_with(&"//") {
+                continue;
+            }
+
+            operations.push(parse_operation(line).unwrap().1);
+        }
+
+        operations
+    }
+}
 
 #[test]
 fn arithmetic_operation() {
