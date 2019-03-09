@@ -3,6 +3,19 @@ use nom::rest;
 pub struct Parser;
 
 #[derive(Debug, PartialEq)]
+enum Arithmetic {
+    Add,
+    Sub,
+    Neg,
+    Eq,
+    Gt,
+    Lt,
+    And,
+    Or,
+    Not,
+}
+
+#[derive(Debug, PartialEq)]
 enum Segment {
     Constant,
     Local,
@@ -15,7 +28,7 @@ enum Segment {
 
 #[derive(Debug, PartialEq)]
 enum Operation {
-    // Arithmetic,
+    Arithmetic(Arithmetic),
     Push { segment: Segment, val: i32 },
     Pop { segment: Segment, val: i32 },
     // Label,
@@ -28,8 +41,50 @@ enum Operation {
 
 named!(parse_operation<&str, Operation>,
     alt!(
+        parse_arithmetic_operation |
         parse_push_operation |
         parse_pop_operation
+    )
+);
+
+named!(parse_arithmetic_operation<&str, Operation>,
+    alt!(
+        do_parse!(
+            tag!("add") >>
+            (Operation::Arithmetic(Arithmetic::Add))
+        ) |
+        do_parse!(
+            tag!("sub") >>
+            (Operation::Arithmetic(Arithmetic::Sub))
+        ) |
+        do_parse!(
+            tag!("neg") >>
+            (Operation::Arithmetic(Arithmetic::Neg))
+        )|
+        do_parse!(
+            tag!("eq") >>
+            (Operation::Arithmetic(Arithmetic::Eq))
+        )|
+        do_parse!(
+            tag!("gt") >>
+            (Operation::Arithmetic(Arithmetic::Gt))
+        )|
+        do_parse!(
+            tag!("lt") >>
+            (Operation::Arithmetic(Arithmetic::Lt))
+        )|
+        do_parse!(
+            tag!("and") >>
+            (Operation::Arithmetic(Arithmetic::And))
+        )|
+        do_parse!(
+            tag!("or") >>
+            (Operation::Arithmetic(Arithmetic::Or))
+        )|
+        do_parse!(
+            tag!("not") >>
+            (Operation::Arithmetic(Arithmetic::Not))
+        )
     )
 );
 
@@ -66,6 +121,16 @@ named!(parse_segment<&str, Segment>,
 );
 
 #[test]
+fn arithmetic_operation() {
+    let expected_operation = Operation::Arithmetic(Arithmetic::Add);
+
+    let operation = parse_arithmetic_operation("add");
+    let (_, operation) = operation.unwrap();
+
+    assert_eq!(operation, expected_operation);
+}
+
+#[test]
 fn push_operation() {
     let expected_operation = Operation::Push {
         segment: Segment::This,
@@ -86,6 +151,19 @@ fn pop_operation() {
     };
 
     let operation = parse_pop_operation("pop local 42");
+    let (_, operation) = operation.unwrap();
+
+    assert_eq!(operation, expected_operation);
+}
+
+#[test]
+fn parse_any_operation() {
+    let expected_operation = Operation::Push {
+        segment: Segment::Pointer,
+        val: 3,
+    };
+
+    let operation = parse_operation("push pointer 3");
     let (_, operation) = operation.unwrap();
 
     assert_eq!(operation, expected_operation);
